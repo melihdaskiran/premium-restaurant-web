@@ -31,10 +31,12 @@ public class AppDbContext : DbContext, IAppDbContext
             new RestaurantSettings 
             { 
                 Id = 1, 
-                Name = "My Restaurant", 
-                Address = "123 Main St", 
-                Phone = "555-0100",
-                WorkingHours = "09:00 - 22:00"
+                Name = "L'Etoile", 
+                Address = "123 Culinary Avenue", 
+                Phone = "+1 (555) 0123-456", 
+                WorkingHours = "18:00 - 23:00",
+                PrimaryColor = "#D4AF37",
+                LogoUrl = ""
             }
         );
 

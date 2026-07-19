@@ -240,23 +240,41 @@ api.MapDelete("/menu-items/{id}", async (int id, IAppDbContext db) =>
 // Photo Upload Endpoint
 api.MapPost("/upload", async (IFormFile file, IWebHostEnvironment env) =>
 {
-    if (file == null || file.Length == 0)
-        return Results.BadRequest("No file uploaded.");
+    if (file == null || file.Length == 0) return Results.BadRequest("No file uploaded");
 
-    var uploadsFolder = Path.Combine(env.WebRootPath, "images");
-    if (!Directory.Exists(uploadsFolder))
-        Directory.CreateDirectory(uploadsFolder);
+    var uploadsFolder = Path.Combine(env.WebRootPath ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot"), "uploads");
+    if (!Directory.Exists(uploadsFolder)) Directory.CreateDirectory(uploadsFolder);
 
     var uniqueFileName = Guid.NewGuid().ToString() + "_" + file.FileName;
     var filePath = Path.Combine(uploadsFolder, uniqueFileName);
 
-    using (var stream = new FileStream(filePath, FileMode.Create))
+    using (var fileStream = new FileStream(filePath, FileMode.Create))
     {
-        await file.CopyToAsync(stream);
+        await file.CopyToAsync(fileStream);
     }
 
-    return Results.Ok(new { url = $"/images/{uniqueFileName}" });
-}).DisableAntiforgery().RequireAuthorization();
+    return Results.Ok(new { url = $"/uploads/{uniqueFileName}" });
+}).RequireAuthorization();
+
+// Settings Endpoints
+api.MapGet("/settings", async (IAppDbContext db) =>
+{
+    var settings = await db.Settings.FirstOrDefaultAsync();
+    return settings != null ? Results.Ok(settings) : Results.NotFound();
+});
+
+api.MapPut("/settings", async (RestaurantApp.Domain.Entities.RestaurantSettings updatedSettings, IAppDbContext db) =>
+{
+    var settings = await db.Settings.FirstOrDefaultAsync();
+    if (settings == null) return Results.NotFound();
+
+    settings.Name = updatedSettings.Name;
+    settings.LogoUrl = updatedSettings.LogoUrl;
+    settings.PrimaryColor = updatedSettings.PrimaryColor;
+    
+    await db.SaveChangesAsync(CancellationToken.None);
+    return Results.Ok(settings);
+}).RequireAuthorization();
 
 app.Run();
 

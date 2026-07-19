@@ -7,10 +7,12 @@ import { useRouter } from "next/navigation";
 
 interface Category { id: number; name: string; }
 interface MenuItem { id: number; name: string; description: string; price: string; imageUrl: string; categoryId: number; }
+interface SiteSettings { id: number; name: string; logoUrl: string; primaryColor: string; }
 
 export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState<"menu" | "settings">("menu");
   
   // Auth state
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -24,6 +26,8 @@ export default function AdminDashboard() {
   // Data state
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [settings, setSettings] = useState<SiteSettings>({ id: 1, name: "", logoUrl: "", primaryColor: "#D4AF37" });
+  const [settingsMessage, setSettingsMessage] = useState("");
   
   // Modal state
   const [showItemModal, setShowItemModal] = useState(false);
@@ -44,12 +48,16 @@ export default function AdminDashboard() {
 
   const fetchData = async () => {
     try {
-      const [catRes, itemRes] = await Promise.all([
+      const [catRes, itemRes, settingsRes] = await Promise.all([
         fetch("http://localhost:5092/api/categories"),
-        fetch("http://localhost:5092/api/menu-items")
+        fetch("http://localhost:5092/api/menu-items"),
+        fetch("http://localhost:5092/api/settings")
       ]);
       setCategories(await catRes.json());
       setMenuItems(await itemRes.json());
+      if (settingsRes.ok) {
+        setSettings(await settingsRes.json());
+      }
     } catch (err) {
       console.error("Data fetch error", err);
     }
@@ -97,7 +105,7 @@ export default function AdminDashboard() {
         setUsernameMessage("✅ " + data.message);
         setTimeout(() => {
           setShowUsernameModal(false);
-          handleLogout(); // Force relogin after username change
+          handleLogout();
         }, 2000);
       } else {
         setUsernameMessage("❌ " + (data.message || "Hata oluştu"));
@@ -133,6 +141,27 @@ export default function AdminDashboard() {
     fetchData();
   };
 
+  const handleSaveSettings = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSettingsMessage("");
+    try {
+      const res = await fetch("http://localhost:5092/api/settings", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(settings),
+        credentials: "include"
+      });
+      if (res.ok) {
+        setSettingsMessage("✅ Ayarlar başarıyla kaydedildi.");
+        setTimeout(() => setSettingsMessage(""), 3000);
+      } else {
+        setSettingsMessage("❌ Kayıt sırasında hata oluştu.");
+      }
+    } catch {
+      setSettingsMessage("❌ Sunucu hatası");
+    }
+  };
+
   const openAddModal = () => {
     setEditingItem(null);
     setFormData({ name: "", description: "", price: "", imageUrl: "", categoryId: categories[0]?.id || 1 });
@@ -150,7 +179,7 @@ export default function AdminDashboard() {
   return (
     <div className="max-w-6xl mx-auto text-white pb-20">
       <div className="flex justify-between items-center mb-8">
-        <h2 className="text-3xl font-serif">Menü Yönetimi</h2>
+        <h2 className="text-3xl font-serif">L'Etoile Yönetim Paneli</h2>
         <div className="flex gap-4">
           <Button variant="outline" className="border-white/20 text-gray-300 hover:text-white" onClick={() => setShowUsernameModal(true)}>
             Kullanıcı Adı Değiştir
@@ -161,49 +190,110 @@ export default function AdminDashboard() {
           <Button variant="destructive" onClick={handleLogout}>
             Çıkış Yap
           </Button>
-          <Button className="bg-accent text-accent-foreground hover:bg-white hover:text-black" onClick={openAddModal}>
-            + Yeni Ürün Ekle
-          </Button>
         </div>
       </div>
 
-      <div className="grid gap-6">
-        <Card className="bg-white/5 border-white/10 text-white">
-          <CardHeader>
-            <CardTitle>Mevcut Menü Öğeleri</CardTitle>
-            <CardDescription className="text-gray-400">Veritabanına kayıtlı tüm ürünler ({menuItems.length})</CardDescription>
-          </CardHeader>
-          <CardContent>
-            {menuItems.length === 0 ? (
-              <p className="text-gray-500 text-sm italic">Henüz menüde hiç ürün yok.</p>
-            ) : (
-              <div className="space-y-4">
-                {menuItems.map(item => (
-                  <div key={item.id} className="flex justify-between items-center p-4 rounded-lg bg-black/50 border border-white/5">
-                    <div className="flex items-center gap-4">
-                      {item.imageUrl && (
-                        <div className="w-16 h-16 rounded overflow-hidden bg-white/10 shrink-0">
-                          <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+      <div className="flex gap-4 mb-6">
+        <Button 
+          variant={activeTab === "menu" ? "default" : "outline"} 
+          className={activeTab === "menu" ? "bg-accent text-black" : "border-white/20"}
+          onClick={() => setActiveTab("menu")}
+        >
+          🍽️ Menü Yönetimi
+        </Button>
+        <Button 
+          variant={activeTab === "settings" ? "default" : "outline"} 
+          className={activeTab === "settings" ? "bg-accent text-black" : "border-white/20"}
+          onClick={() => setActiveTab("settings")}
+        >
+          ⚙️ Site Ayarları
+        </Button>
+      </div>
+
+      {activeTab === "menu" && (
+        <div className="grid gap-6">
+          <Card className="bg-white/5 border-white/10 text-white">
+            <CardHeader className="flex flex-row justify-between items-center">
+              <div>
+                <CardTitle>Mevcut Menü Öğeleri</CardTitle>
+                <CardDescription className="text-gray-400">Veritabanına kayıtlı tüm ürünler ({menuItems.length})</CardDescription>
+              </div>
+              <Button className="bg-accent text-accent-foreground hover:bg-white hover:text-black" onClick={openAddModal}>
+                + Yeni Ürün Ekle
+              </Button>
+            </CardHeader>
+            <CardContent>
+              {menuItems.length === 0 ? (
+                <p className="text-gray-500 text-sm italic">Henüz menüde hiç ürün yok.</p>
+              ) : (
+                <div className="space-y-4">
+                  {menuItems.map(item => (
+                    <div key={item.id} className="flex justify-between items-center p-4 rounded-lg bg-black/50 border border-white/5">
+                      <div className="flex items-center gap-4">
+                        {item.imageUrl && (
+                          <div className="w-16 h-16 rounded overflow-hidden bg-white/10 shrink-0">
+                            <img src={item.imageUrl} alt={item.name} className="w-full h-full object-cover" />
+                          </div>
+                        )}
+                        <div>
+                          <h4 className="font-semibold text-lg">{item.name}</h4>
+                          <p className="text-sm text-gray-400">{item.description}</p>
+                          <div className="text-xs text-accent mt-1">Kategori: {categories.find(c => c.id === item.categoryId)?.name || "-"}</div>
                         </div>
-                      )}
-                      <div>
-                        <h4 className="font-semibold text-lg">{item.name}</h4>
-                        <p className="text-sm text-gray-400">{item.description}</p>
-                        <div className="text-xs text-accent mt-1">Kategori: {categories.find(c => c.id === item.categoryId)?.name || "-"}</div>
+                      </div>
+                      <div className="flex items-center gap-4">
+                        <span className="text-accent font-medium">{item.price}</span>
+                        <Button variant="outline" size="sm" className="border-white/20 text-gray-300 hover:bg-white/10 hover:text-white" onClick={() => openEditModal(item)}>Düzenle</Button>
+                        <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(item.id)}>Sil</Button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
-                      <span className="text-accent font-medium">{item.price}</span>
-                      <Button variant="outline" size="sm" className="border-white/20 text-gray-300 hover:bg-white/10 hover:text-white" onClick={() => openEditModal(item)}>Düzenle</Button>
-                      <Button variant="destructive" size="sm" onClick={() => handleDeleteItem(item.id)}>Sil</Button>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === "settings" && (
+        <div className="grid gap-6">
+          <Card className="bg-white/5 border-white/10 text-white max-w-2xl">
+            <CardHeader>
+              <CardTitle>Genel Site Ayarları</CardTitle>
+              <CardDescription className="text-gray-400">Müşterilerin göreceği restoran adı, logo ve ana tema rengi</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSaveSettings} className="space-y-6">
+                {settingsMessage && <div className="text-sm p-3 bg-white/5 rounded border border-white/10">{settingsMessage}</div>}
+                <div>
+                  <label className="text-sm text-gray-400 block mb-2">Restoran (Site) Adı</label>
+                  <input required value={settings.name} onChange={e => setSettings({...settings, name: e.target.value})} className="w-full p-2 bg-black border border-white/10 rounded focus:border-accent outline-none" />
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 block mb-2">Logo URL (İsteğe Bağlı)</label>
+                  <input value={settings.logoUrl || ""} onChange={e => setSettings({...settings, logoUrl: e.target.value})} placeholder="https://..." className="w-full p-2 bg-black border border-white/10 rounded focus:border-accent outline-none" />
+                  {settings.logoUrl && (
+                    <div className="mt-3 p-2 bg-black/50 border border-white/5 inline-block rounded">
+                       <img src={settings.logoUrl} alt="Logo Önizleme" className="h-12 object-contain" />
                     </div>
+                  )}
+                </div>
+                <div>
+                  <label className="text-sm text-gray-400 block mb-2">Tema Ana Rengi (Accent Color)</label>
+                  <div className="flex items-center gap-4">
+                    <input type="color" value={settings.primaryColor} onChange={e => setSettings({...settings, primaryColor: e.target.value})} className="h-12 w-24 bg-black border border-white/10 rounded cursor-pointer" />
+                    <span className="text-sm font-mono">{settings.primaryColor}</span>
                   </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                  <p className="text-xs text-gray-500 mt-2">Bu renk sitedeki butonlar, başlık vurguları ve ince detaylarda kullanılacaktır.</p>
+                </div>
+                <div className="pt-4">
+                  <Button type="submit" className="bg-accent text-black hover:bg-white w-full py-6 text-lg">Ayarları Kaydet</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       {/* Item Modal */}
       {showItemModal && (

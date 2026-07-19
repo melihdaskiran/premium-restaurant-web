@@ -9,24 +9,26 @@ import { useState, useEffect } from "react";
 
 interface Category { id: number; name: string; displayOrder: number; }
 interface MenuItem { id: number; name: string; description: string; price: string; imageUrl: string; categoryId: number; }
+interface SiteSettings { id: number; name: string; logoUrl: string; primaryColor: string; }
 
 export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [activeCategoryId, setActiveCategoryId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [catRes, itemRes] = await Promise.all([
+        const [catRes, itemRes, setRes] = await Promise.all([
           fetch("http://localhost:5092/api/categories"),
-          fetch("http://localhost:5092/api/menu-items")
+          fetch("http://localhost:5092/api/menu-items"),
+          fetch("http://localhost:5092/api/settings")
         ]);
-        const cats = await catRes.json();
-        const items = await itemRes.json();
-        setCategories(cats);
-        setMenuItems(items);
+        setCategories(await catRes.json());
+        setMenuItems(await itemRes.json());
+        if(setRes.ok) setSettings(await setRes.json());
         setLoading(false);
       } catch (error) {
         console.error("Veri çekilemedi:", error);
@@ -52,7 +54,11 @@ export default function Home() {
 
         <div className="relative z-20 text-center px-4 max-w-4xl mx-auto flex flex-col items-center">
           <motion.div initial={{ opacity: 0, y: 30 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 1, ease: "easeOut" }}>
-            <h2 className="uppercase tracking-[0.3em] text-accent text-sm md:text-base font-semibold mb-4">L'Etoile</h2>
+            {settings?.logoUrl ? (
+               <img src={settings.logoUrl} alt={settings?.name || "Logo"} className="h-24 md:h-32 mb-6 mx-auto object-contain" />
+            ) : (
+               <h2 className="uppercase tracking-[0.3em] text-accent text-sm md:text-base font-semibold mb-4">{settings?.name || "L'Etoile"}</h2>
+            )}
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif text-white mb-6 leading-tight">
               A Symphony of <br/> <span className="italic text-accent/90">Flavors</span>
             </h1>
@@ -177,13 +183,13 @@ export default function Home() {
 
       {/* Footer */}
       <footer className="border-t border-white/10 bg-black/50 py-12 text-center mt-20">
-        <h2 className="uppercase tracking-[0.3em] text-accent text-xl font-serif mb-4">L'Etoile</h2>
+        <h2 className="uppercase tracking-[0.3em] text-accent text-xl font-serif mb-4">{settings?.name || "L'Etoile"}</h2>
         <p className="text-muted-foreground text-sm font-light">
           123 Culinary Avenue, Gourmet District <br/>
           Reservations: +1 (555) 0123-456
         </p>
         <p className="text-white/20 text-xs mt-8 uppercase tracking-widest">
-          © 2026 L'Etoile Restaurant. All Rights Reserved.
+          © 2026 {settings?.name || "L'Etoile"} Restaurant. All Rights Reserved.
         </p>
       </footer>
     </main>

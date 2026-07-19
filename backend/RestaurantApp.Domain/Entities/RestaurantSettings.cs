@@ -8,4 +8,6 @@ public class RestaurantSettings
     public string? Phone { get; set; }
     public string? WorkingHours { get; set; }
     public string? InstagramUrl { get; set; }
+    public string? LogoUrl { get; set; }
+    public string PrimaryColor { get; set; } = "#D4AF37"; // Default Gold
 }
