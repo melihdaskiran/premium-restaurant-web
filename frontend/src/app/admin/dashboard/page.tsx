@@ -12,7 +12,7 @@ interface SiteSettings { id: number; name: string; logoUrl: string; primaryColor
 export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"menu" | "settings">("menu");
+  const [activeTab, setActiveTab] = useState<"menu" | "settings" | "content">("menu");
   
   // Auth state
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -26,7 +26,10 @@ export default function AdminDashboard() {
   // Data state
   const [categories, setCategories] = useState<Category[]>([]);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
-  const [settings, setSettings] = useState<SiteSettings>({ id: 1, name: "", logoUrl: "", primaryColor: "#D4AF37" });
+  const [settings, setSettings] = useState<any>({ 
+    id: 1, name: "", logoUrl: "", primaryColor: "#D4AF37",
+    heroTitle: "", heroSubtitle: "", visionTitle: "", visionText: "", visionChefName: "", ctaTitle: "", ctaText: "" 
+  });
   const [settingsMessage, setSettingsMessage] = useState("");
   
   // Modal state
@@ -208,6 +211,13 @@ export default function AdminDashboard() {
         >
           ⚙️ Site Ayarları
         </Button>
+        <Button 
+          variant={activeTab === "content" ? "default" : "outline"} 
+          className={activeTab === "content" ? "bg-accent text-black" : "border-white/20"}
+          onClick={() => setActiveTab("content")}
+        >
+          📝 İçerik Yönetimi
+        </Button>
       </div>
 
       {activeTab === "menu" && (
@@ -288,6 +298,66 @@ export default function AdminDashboard() {
                 </div>
                 <div className="pt-4">
                   <Button type="submit" className="bg-accent text-black hover:bg-white w-full py-6 text-lg">Ayarları Kaydet</Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
+      {activeTab === "content" && (
+        <div className="grid gap-6">
+          <Card className="bg-white/5 border-white/10 text-white max-w-4xl">
+            <CardHeader>
+              <CardTitle>Ana Sayfa İçerik Yönetimi</CardTitle>
+              <CardDescription className="text-gray-400">Ana sayfadaki tüm dinamik metinleri buradan değiştirebilirsiniz.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSaveSettings} className="space-y-8">
+                {settingsMessage && <div className="text-sm p-3 bg-white/5 rounded border border-white/10">{settingsMessage}</div>}
+                
+                <div className="space-y-4">
+                  <h3 className="text-xl text-accent border-b border-white/10 pb-2">Hero (Giriş) Bölümü</h3>
+                  <div>
+                    <label className="text-sm text-gray-400 block mb-2">Büyük Başlık (Hero Title)</label>
+                    <input required value={settings.heroTitle || ""} onChange={e => setSettings({...settings, heroTitle: e.target.value})} className="w-full p-2 bg-black border border-white/10 rounded focus:border-accent outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400 block mb-2">Alt Açıklama (Hero Subtitle)</label>
+                    <textarea required value={settings.heroSubtitle || ""} onChange={e => setSettings({...settings, heroSubtitle: e.target.value})} className="w-full p-2 bg-black border border-white/10 rounded focus:border-accent outline-none" rows={2} />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-xl text-accent border-b border-white/10 pb-2">Şefin Vizyonu (Chef's Vision) Bölümü</h3>
+                  <div>
+                    <label className="text-sm text-gray-400 block mb-2">Bölüm Başlığı</label>
+                    <input required value={settings.visionTitle || ""} onChange={e => setSettings({...settings, visionTitle: e.target.value})} className="w-full p-2 bg-black border border-white/10 rounded focus:border-accent outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400 block mb-2">Vizyon Metni (Uzun Yazı)</label>
+                    <textarea required value={settings.visionText || ""} onChange={e => setSettings({...settings, visionText: e.target.value})} className="w-full p-2 bg-black border border-white/10 rounded focus:border-accent outline-none" rows={5} />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400 block mb-2">Şefin Adı Soyadı</label>
+                    <input required value={settings.visionChefName || ""} onChange={e => setSettings({...settings, visionChefName: e.target.value})} className="w-full p-2 bg-black border border-white/10 rounded focus:border-accent outline-none" />
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <h3 className="text-xl text-accent border-b border-white/10 pb-2">Eylem Çağrısı (CTA / Rezervasyon) Bölümü</h3>
+                  <div>
+                    <label className="text-sm text-gray-400 block mb-2">CTA Başlık</label>
+                    <input required value={settings.ctaTitle || ""} onChange={e => setSettings({...settings, ctaTitle: e.target.value})} className="w-full p-2 bg-black border border-white/10 rounded focus:border-accent outline-none" />
+                  </div>
+                  <div>
+                    <label className="text-sm text-gray-400 block mb-2">CTA Açıklama</label>
+                    <textarea required value={settings.ctaText || ""} onChange={e => setSettings({...settings, ctaText: e.target.value})} className="w-full p-2 bg-black border border-white/10 rounded focus:border-accent outline-none" rows={2} />
+                  </div>
+                </div>
+
+                <div className="pt-4">
+                  <Button type="submit" className="bg-accent text-black hover:bg-white w-full py-6 text-lg">İçerikleri Kaydet</Button>
                 </div>
               </form>
             </CardContent>

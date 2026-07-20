@@ -36,7 +36,14 @@ public class AppDbContext : DbContext, IAppDbContext
                 Phone = "+1 (555) 0123-456", 
                 WorkingHours = "18:00 - 23:00",
                 PrimaryColor = "#D4AF37",
-                LogoUrl = ""
+                LogoUrl = "",
+                HeroTitle = "A Symphony of Flavors",
+                HeroSubtitle = "Experience the pinnacle of culinary artistry, where traditional techniques meet modern innovation.",
+                VisionTitle = "Art on a Plate. Passion in Every Bite.",
+                VisionText = "At L'Etoile, dining is not merely a necessity, but an art form that speaks to the soul. We blend carefully selected ingredients from around the world with classical French gastronomy techniques to offer an unforgettable experience.\n\nEvery plate is a reflection of our culinary team's passion and pursuit of perfection. We invite you to join us on this unique journey of flavors.",
+                VisionChefName = "Alexander Rossi",
+                CtaTitle = "Unforgettable Evenings Await",
+                CtaText = "Reserve your table today and immerse yourself in an atmosphere of elegance, warmth, and culinary brilliance."
             }
         );
 

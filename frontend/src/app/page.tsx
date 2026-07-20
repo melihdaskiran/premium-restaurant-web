@@ -10,7 +10,10 @@ import { ChevronDown } from "lucide-react";
 
 interface Category { id: number; name: string; displayOrder: number; }
 interface MenuItem { id: number; name: string; description: string; price: string; imageUrl: string; categoryId: number; }
-interface SiteSettings { id: number; name: string; logoUrl: string; primaryColor: string; }
+interface SiteSettings { 
+  id: number; name: string; logoUrl: string; primaryColor: string; 
+  heroTitle: string; heroSubtitle: string; visionTitle: string; visionText: string; visionChefName: string; ctaTitle: string; ctaText: string; 
+}
 
 export default function Home() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -81,12 +84,11 @@ export default function Home() {
                <h2 className="uppercase tracking-[0.4em] text-accent text-sm md:text-base font-semibold mb-6 tracking-widest drop-shadow-lg">{siteName}</h2>
             )}
             
-            <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif text-white mb-6 leading-none drop-shadow-2xl">
-              A Symphony <br className="hidden md:block" /> of <span className="italic font-light text-accent/90">Flavors</span>
+            <h1 className="text-6xl md:text-8xl lg:text-9xl font-serif text-white mb-6 leading-none drop-shadow-2xl" dangerouslySetInnerHTML={{ __html: settings?.heroTitle || "A Symphony <br class='hidden md:block' /> of <span class='italic font-light text-accent/90'>Flavors</span>" }}>
             </h1>
             
             <p className="text-gray-300 text-lg md:text-2xl font-light mb-12 max-w-3xl mx-auto drop-shadow-md">
-              Experience the pinnacle of culinary artistry, where traditional techniques meet modern innovation.
+              {settings?.heroSubtitle || "Experience the pinnacle of culinary artistry, where traditional techniques meet modern innovation."}
             </p>
 
             <Button 
@@ -130,21 +132,16 @@ export default function Home() {
               <span className="w-12 h-[1px] bg-accent inline-block"></span>
               The Vision
             </h3>
-            <h2 className="text-5xl md:text-7xl font-serif mb-8 leading-[1.1] text-white">Art on a Plate. <br/><span className="italic font-light text-white/70">Passion in Every Bite.</span></h2>
+            <h2 className="text-5xl md:text-7xl font-serif mb-8 leading-[1.1] text-white" dangerouslySetInnerHTML={{ __html: settings?.visionTitle || "Art on a Plate. <br/><span class='italic font-light text-white/70'>Passion in Every Bite.</span>" }}></h2>
             
-            <div className="space-y-6 text-gray-400 font-light text-lg leading-relaxed">
-              <p>
-                At {siteName}, dining is not merely a necessity, but an art form that speaks to the soul. We blend carefully selected ingredients from around the world with classical French gastronomy techniques to offer an unforgettable experience.
-              </p>
-              <p>
-                Every plate is a reflection of our culinary team's passion and pursuit of perfection. We invite you to join us on this unique journey of flavors.
-              </p>
+            <div className="space-y-6 text-gray-400 font-light text-lg leading-relaxed whitespace-pre-wrap">
+              {settings?.visionText || "At " + siteName + ", dining is not merely a necessity, but an art form that speaks to the soul. We blend carefully selected ingredients from around the world with classical French gastronomy techniques to offer an unforgettable experience.\n\nEvery plate is a reflection of our culinary team's passion and pursuit of perfection. We invite you to join us on this unique journey of flavors."}
             </div>
             
             <div className="mt-12 flex items-center gap-6">
               <img src="https://images.unsplash.com/photo-1583394838336-acd977736f90?q=80&w=200&auto=format&fit=crop" alt="Chef" className="w-16 h-16 rounded-full object-cover border border-white/20 grayscale" />
               <div>
-                <div className="font-serif text-2xl text-white">Alexander Rossi</div>
+                <div className="font-serif text-2xl text-white">{settings?.visionChefName || "Alexander Rossi"}</div>
                 <div className="text-accent text-sm tracking-widest uppercase mt-1">Executive Chef</div>
               </div>
             </div>
@@ -275,9 +272,9 @@ export default function Home() {
         
         <div className="relative z-20 max-w-4xl mx-auto px-4 text-center">
           <motion.div initial={{ opacity: 0, scale: 0.9 }} whileInView={{ opacity: 1, scale: 1 }} viewport={{ once: true }} transition={{ duration: 1 }}>
-            <h2 className="text-5xl md:text-7xl font-serif text-white mb-8">Unforgettable <br/><span className="text-accent italic">Evenings Await</span></h2>
+            <h2 className="text-5xl md:text-7xl font-serif text-white mb-8" dangerouslySetInnerHTML={{ __html: settings?.ctaTitle || "Unforgettable <br/><span class='text-accent italic'>Evenings Await</span>" }}></h2>
             <p className="text-gray-300 text-lg md:text-xl font-light mb-12 max-w-2xl mx-auto">
-              Reserve your table today and immerse yourself in an atmosphere of elegance, warmth, and culinary brilliance.
+              {settings?.ctaText || "Reserve your table today and immerse yourself in an atmosphere of elegance, warmth, and culinary brilliance."}
             </p>
             <Button size="lg" className="rounded-full px-12 py-8 text-xl bg-accent text-black hover:bg-white transition-all duration-500 shadow-[0_0_40px_rgba(212,175,55,0.4)]">
               Book Your Experience

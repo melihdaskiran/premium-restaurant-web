@@ -271,6 +271,13 @@ api.MapPut("/settings", async (RestaurantApp.Domain.Entities.RestaurantSettings 
     settings.Name = updatedSettings.Name;
     settings.LogoUrl = updatedSettings.LogoUrl;
     settings.PrimaryColor = updatedSettings.PrimaryColor;
+    settings.HeroTitle = updatedSettings.HeroTitle;
+    settings.HeroSubtitle = updatedSettings.HeroSubtitle;
+    settings.VisionTitle = updatedSettings.VisionTitle;
+    settings.VisionText = updatedSettings.VisionText;
+    settings.VisionChefName = updatedSettings.VisionChefName;
+    settings.CtaTitle = updatedSettings.CtaTitle;
+    settings.CtaText = updatedSettings.CtaText;
     
     await db.SaveChangesAsync(CancellationToken.None);
     return Results.Ok(settings);
