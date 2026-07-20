@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Playfair_Display } from "next/font/google";
 import "./globals.css";
+import CustomCursor from "@/components/CustomCursor";
 
 const inter = Inter({ 
   subsets: ["latin"],
@@ -51,11 +52,12 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" className={`dark ${inter.variable} ${playfair.variable}`}>
+    <html lang="en" className={`dark ${inter.variable} ${playfair.variable} cursor-none`}>
       <head>
         {customStyle && <style>{customStyle}</style>}
       </head>
-      <body className="antialiased min-h-screen bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
+      <body className="antialiased min-h-screen bg-black text-foreground selection:bg-accent selection:text-black cursor-none">
+        <CustomCursor />
         {children}
       </body>
     </html>
